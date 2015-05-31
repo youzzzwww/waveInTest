@@ -29,7 +29,7 @@ int rtpInitialize(const char* ipAddr="127.0.0.1", int port=8000)
 	rtp_session_set_blocking_mode(session,1);
 	rtp_session_set_connected_mode(session,TRUE);
 	rtp_session_set_remote_addr(session,ipAddr,port);
-	rtp_session_set_payload_type(session,0);
+	rtp_session_set_payload_type(session, 0);
 	rtp_session_set_seq_number(session, 1);
 	ssrc=getenv("SSRC");
 	if (ssrc!=NULL) {

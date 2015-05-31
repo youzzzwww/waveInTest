@@ -77,14 +77,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="newAudioEncode.h" />
+    <ClInclude Include="package.h" />
     <ClInclude Include="rtpSend.h" />
+    <ClInclude Include="rtpTime.h" />
     <ClInclude Include="structIni.h" />
+    <ClInclude Include="tcpCommunication.h" />
+    <ClInclude Include="tcpSocket.h" />
     <ClInclude Include="waveIn.h" />
     <ClInclude Include="wavFileRead.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="newAudioEncode.cpp" />
+    <ClCompile Include="package.cpp" />
     <ClCompile Include="rtpSend.cpp" />
+    <ClCompile Include="rtpTime.cpp" />
+    <ClCompile Include="tcpCommunication.cpp" />
+    <ClCompile Include="tcpSocket.cpp" />
     <ClCompile Include="waveIn.cpp" />
     <ClCompile Include="waveInTest.cpp" />
     <ClCompile Include="wavFileRead.cpp" />

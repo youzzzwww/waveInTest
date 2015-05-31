@@ -2,37 +2,8 @@
 //#include "waveIn.h"
 #include "wavFileRead.h"
 #include "newAudioEncode.h"
-//#include <signal.h>
-
-//struct waveBuffer buffer;
-//DWORD threadID_waveIn,threadID_rtpSend;
-//HANDLE hThread_waveIn,hThread_rtpSend;
-//void catcher(int sig)
-//{	
-//	writeWAVData("..\\record.wav", buffer.dataBuffer, buffer.size, SamplesPerSec, BitsPerSample/8, Channels);	
-//	myWaveInDestory(&buffer);
-//	CloseHandle(hThread_waveIn);
-//
-//	WaitForSingleObject(hThread_rtpSend, INFINITE);
-//	rtpDestory();
-//	CloseHandle(hThread_rtpSend);
-//	free(buffer.dataBuffer);
-//	exit(0);
-//}
-//int main(int argc, char* argv[])
-//{
-//rtpInitialize();
-//myWaveInInitalize(&buffer);
-//hThread_waveIn = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)myWaveInStart, NULL, 0, &threadID_waveIn);
-//hThread_rtpSend = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)rtpSend, &buffer, 0, &threadID_rtpSend);
-//
-//while(1)
-//{
-//	Sleep(20);
-//	signal(SIGINT, catcher);
-//}
-//return 0;
-//}
+#include "structIni.h"
+#include "tcpCommunication.h"
 
 int readFile(const char* filename, char** buffer, int &size, int &sample_rate, int &channels)
 {
@@ -58,16 +29,14 @@ int readFile(const char* filename, char** buffer, int &size, int &sample_rate, i
 	wave_reader_close(reader);
 	return 0;
 }
-int sendFile(const char* filename)
+DWORD WINAPI encoderStart(LPVOID pParam)
 {
-	int sample_rate=0,channels=0;
-	int buffer_size=0,encoder_size=0;
-	char* buffer=NULL;
+	waveBuffer* wave_buffer = (waveBuffer*)pParam;
+	char* buffer = wave_buffer->dataBuffer;
+	int buffer_size = wave_buffer->size;
+	int encoder_size=0;
 	unsigned char* out=NULL;
-	readFile(filename, &buffer,buffer_size, sample_rate, channels);
 
-	encoderInitialize(sample_rate, channels);
-	rtpInitialize("127.0.0.1", 30998);
 	while( readBuffer(&buffer, buffer_size) )
 	{
 		encoder_size = encoder(&out);
@@ -75,6 +44,30 @@ int sendFile(const char* filename)
 	}
 	//·¢ËÍ¿Õ°ü½áÊø
 	rtpSend((unsigned char*)buffer, 0);
+	
+	return 0;
+}
+int sendFile(const char* filename)
+{
+	DWORD threadID_encoder,threadID_tcp;
+	HANDLE hThread_encoder,hThread_tcp;
+	int sample_rate=0,channels=0;
+	waveBuffer buffer;
+	readFile(filename, &buffer.dataBuffer,buffer.size, sample_rate, channels);
+
+	encoderInitialize(sample_rate, channels);
+	rtpInitialize("127.0.0.1", 30998);
+	tcpIni("127.0.0.1", 30996);
+
+	hThread_encoder = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)encoderStart, &buffer, 0, &threadID_encoder);
+	hThread_tcp = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)tcpCommunicationStart, 0, 0, &threadID_tcp);
+
+	while( WaitForSingleObject(hThread_encoder, INFINITE)!=WAIT_OBJECT_0 || 
+		WaitForSingleObject(hThread_tcp, INFINITE)!=WAIT_OBJECT_0)
+	{
+		Sleep(80);
+	}
+	tcpDestroy();
 	rtpDestory();
 	encoderDestory();
 	return 0;

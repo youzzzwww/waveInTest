@@ -43,7 +43,7 @@ int encoder(unsigned char** out_buffer)
 	ret = doEncoder(encoder_handle, in, out);
 	*out_buffer = out;
 	//写入wb数据到记录文件
-	fwrite(out, ret, 1, wbFile);
+	//fwrite(out, ret, 1, wbFile);
 
 	return ret;
 }
