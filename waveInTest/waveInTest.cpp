@@ -5,6 +5,7 @@
 #include "structIni.h"
 #include "tcpCommunication.h"
 
+CRITICAL_SECTION csPacketSize;
 int readFile(const char* filename, char** buffer, int &size, int &sample_rate, int &channels)
 {
 	wave_reader_error* error=new wave_reader_error;
@@ -40,7 +41,10 @@ DWORD WINAPI encoderStart(LPVOID pParam)
 	while( readBuffer(&buffer, buffer_size) )
 	{
 		encoder_size = encoder(&out);
-		send_four_frame(out,encoder_size);
+
+		EnterCriticalSection(&csPacketSize);
+		send_packet_split_frames(out,encoder_size,wave_buffer->frames_per_packet);
+		LeaveCriticalSection(&csPacketSize);
 	}
 	//·¢ËÍ¿Õ°ü½áÊø
 	rtpSend((unsigned char*)buffer, 0);
@@ -53,14 +57,16 @@ int sendFile(const char* filename)
 	HANDLE hThread_encoder,hThread_tcp;
 	int sample_rate=0,channels=0;
 	waveBuffer buffer;
+	buffer.frames_per_packet = 1;
 	readFile(filename, &buffer.dataBuffer,buffer.size, sample_rate, channels);
 
+	InitializeCriticalSection(&csPacketSize);
 	encoderInitialize(sample_rate, channels);
 	rtpInitialize("127.0.0.1", 30998);
 	tcpIni("127.0.0.1", 30996);
 
 	hThread_encoder = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)encoderStart, &buffer, 0, &threadID_encoder);
-	hThread_tcp = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)tcpCommunicationStart, 0, 0, &threadID_tcp);
+	hThread_tcp = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)tcpCommunicationStart, &buffer.frames_per_packet, 0, &threadID_tcp);
 
 	while( WaitForSingleObject(hThread_encoder, INFINITE)!=WAIT_OBJECT_0 || 
 		WaitForSingleObject(hThread_tcp, INFINITE)!=WAIT_OBJECT_0)
@@ -70,6 +76,7 @@ int sendFile(const char* filename)
 	tcpDestroy();
 	rtpDestory();
 	encoderDestory();
+	DeleteCriticalSection(&csPacketSize);
 	return 0;
 }
 int main(int argc, char* argv[])

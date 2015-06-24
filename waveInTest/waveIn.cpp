@@ -87,7 +87,6 @@ int myWaveInInitalize(waveBuffer* buffer)
 
 	buffer->dataBuffer = (char*)malloc(1*sizeof(char));
 	buffer->size = 0;
-	buffer->recordFlag = 1;
 	//*
 	//* initialise the module variables
 	//*/
@@ -144,6 +143,5 @@ int myWaveInDestory(waveBuffer* buffer)
 	freeBlocks(waveBlocks);
 	DeleteCriticalSection(&waveCriticalSection);
 	//change the record flag to continue send rtp package
-	buffer->recordFlag = 0;
 	return 1;
 }

@@ -3,7 +3,7 @@ struct waveBuffer
 {
 	char* dataBuffer;
 	int size;
-	bool recordFlag;  //1 indicate recording ,0 indicate record terminated
+	int frames_per_packet;  
 };
 #define SamplesPerSec 48000
 #define BitsPerSample 16

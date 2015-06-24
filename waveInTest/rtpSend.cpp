@@ -49,87 +49,22 @@ int rtpSend(unsigned char* buffer, int size)
 
 	rtp_session_send_with_ts(session, buffer, size, send_ts);
 	count++;
-	printf("packet number:%d\tpacket size:%d\n",count, size);
+	//printf("packet number:%d\tpacket size:%d\n",count, size);
 	user_ts += 20;
 	send_ts += 160;
 	return 1;
 }
-int send_four_frame(unsigned char* out,int encoder_size)
+int send_packet_split_frames(unsigned char* out,int encoder_size, int frame_num)
 {
 	if(encoder_size>0)
 	{
-		for(int i=0;i<4;i++)
+		for(int i=0;i<frame_num;i++)
 		{
-			rtpSend(out+i*encoder_size/4, encoder_size/4);
+			rtpSend(out+i*encoder_size/frame_num, encoder_size/frame_num);
 		}
 	}
 	return 0;
 }
-//DWORD WINAPI rtpSend(LPVOID pParam)
-//{
-//	int i,count=0,read_len=0,read_size=0,ret=0;
-//	uint32_t user_ts=0;
-//	int seq_num=0;
-//	waveBuffer *buffer = (waveBuffer*)pParam;
-////rtp发送
-//	while(buffer->recordFlag)
-//	{
-//		read_len = get_read_length(encoder_handle);
-//		if(read_size+read_len <= buffer->size)
-//		{			
-//			memset(in, 0,  BUF_MAX*sizeof(char));
-//			memcpy(in, buffer->dataBuffer+read_size, read_len);
-//			ret = doEncoder(encoder_handle, in, out);
-//			//写入wb数据到记录文件
-//			fwrite(out, ret, 1, wbFile);
-//
-//			if(ret>0)
-//			{
-//				for(i=0;i<4;i++)
-//				{
-//					seq_num = rtp_session_get_seq_number(session);
-//					rtp_session_send_with_ts(session, out+ret/4*i, ret/4, user_ts);					
-//					count++;				
-//					printf("send %d packet|current sequence number is:%d\n",count,seq_num);
-//					user_ts += 160;
-//				}
-//			}
-//			read_size += read_len;
-//			read_len = get_read_length(encoder_handle);
-//		}
-//		else 
-//		{
-//			Sleep(20);
-//		}
-//	}
-//	if(!buffer->recordFlag)
-//	{
-//		read_len = get_read_length(encoder_handle);
-//		while(read_size+read_len <= buffer->size)
-//		{			
-//			memset(in, 0,  BUF_MAX*sizeof(char));
-//			memcpy(in, buffer->dataBuffer+read_size, read_len);
-//			ret = doEncoder(encoder_handle, in, out);
-//			//写入wb数据到记录文件
-//			fwrite(out, ret, 1, wbFile);
-//
-//			if(ret>0)
-//			{
-//				for(i=0;i<4;i++)
-//				{
-//					seq_num = rtp_session_get_seq_number(session);
-//					rtp_session_send_with_ts(session, out+ret/4*i, ret/4, user_ts);					
-//					count++;				
-//					printf("send %d packet|current sequence number is:%d\n",count,seq_num);
-//					user_ts += 160;
-//				}
-//			}
-//			read_size += read_len;
-//			read_len = get_read_length(encoder_handle);
-//		}
-//	}
-//	return 1;
-//}
 int rtpDestory()
 {
 	rtp_session_destroy(session);

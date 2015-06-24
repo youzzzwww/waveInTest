@@ -1,5 +1,5 @@
 #include "tcpCommunication.h"
-
+#include <sstream>
 TcpClient* tcp_client;
 
 int tcpIni(const char* ip, int port)
@@ -12,9 +12,16 @@ int tcpIni(const char* ip, int port)
 }
 DWORD WINAPI tcpCommunicationStart(LPVOID pParam)
 {
+	int* frames_per_packet = (int*)pParam;
+	std::stringstream ostream;
+
 	Data* data = new Data();
-	tcp_client->Recv(data);
-	printf("%s",data->getString().c_str());
+	while( tcp_client->Recv(data) )
+	{
+		ostream<<data->getString();
+		ostream>>(*frames_per_packet);
+		printf("%s,%d\n",data->getString().c_str(),*frames_per_packet);
+	}
 
 	return 0;
 }

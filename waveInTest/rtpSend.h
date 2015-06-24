@@ -9,6 +9,6 @@ int getCurrentMilliseconds();
 
 int rtpInitialize(const char* ipAddr, int port);
 int rtpSend(unsigned char* buffer, int size);
-int send_four_frame(unsigned char* out,int encoder_size);
+int send_packet_split_frames(unsigned char* out,int encoder_size, int frame_num);
 //DWORD WINAPI rtpSend(LPVOID pParam);
 int rtpDestory();
